@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareerFit</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    #output {
+      margin-top: 20px;
+      display: none; /* Hide the output section initially */
+    }
+    .email-container {
+      background: #f9f9f9;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    .email-container h1, .email-container h2, .email-container h3 {
+      color: #333;
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .email-container p {
+      color: #555;
+      line-height: 1.6;
+    }
+    .email-container strong {
+      color: #000;
+    }
+    .email-container ul {
+      list-style-type: disc;
+      margin-left: 20px;
+    }
+    .email-container li {
+      margin-bottom: 0.5em;
+    }
+    .upload-button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .upload-button:hover {
+      background-color: #0056b3;
+    }
+    .file-input {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    .file-input:hover {
+      border-color: #007bff;
+    }
+    .summary {
+      font-size: 18px;
+      color: #555;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .email-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .send-button {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .send-button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>CareerFit</h1>
+  <p class="summary">Find your <strong>Candidate Market Fit</strong> from your resume in <strong>one click!</strong></p>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf" required>
+    <button type="submit" class="upload-button">Upload and get your career-fit one pager</button>
+  </form>
+  <div id="output">
+    <div class="email-container">
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" class="email-input" placeholder="Subject line will appear here" readonly>
+      <label for="emails">To:</label>
+      <input type="text" id="emails" class="email-input" placeholder="Extracted emails will appear here" readonly>
+      <label for="onepager">Content:</label>
+      <div id="onepager" class="email-container"></div>
+      <button id="sendButton" class="send-button">Email yourself the one-pager!</button>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById('fileInput');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Show the output section
+          document.getElementById('output').style.display = 'block';
+
+          // Display parsed emails in the input box
+          if (data.emails && data.emails.length > 0) {
+            document.getElementById('emails').value = data.emails.join(', ');
+          } else {
+            document.getElementById('emails').value = 'No email addresses found in the PDF.';
+          }
+
+          // Parse Markdown into HTML and display the one-pager
+          const onepagerHtml = marked.parse(data.onepager);
+          document.getElementById('onepager').innerHTML = onepagerHtml;
+
+          // Generate a subject line based on the one-pager
+          const subjectLine = `Your Career Fit One-Pager`;
+          document.getElementById('subject').value = subjectLine;
+        } else {
+          alert(data.message || 'An error occurred.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while uploading the file.');
+      }
+    });
+
+    // Handle "Send Email" button click
+    document.getElementById('sendButton').addEventListener('click', async () => {
+      const emails = document.getElementById('emails').value;
+      const subject = document.getElementById('subject').value;
+      const onepager = document.getElementById('onepager').innerText;
+
+      if (!emails || emails === 'No email addresses found in the PDF.') {
+        alert('No valid email addresses found.');
+        return;
+      }
+
+      try {
+        const response = await fetch('/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ emails, subject, onepager }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert('Email sent successfully!');
+        } else {
+          alert(data.message || 'An error occurred while sending the email.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while sending the email.');
+      }
+    });
+  </script>
+</body>
+</html>
