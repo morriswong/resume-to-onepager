@@ -206,46 +206,173 @@
     .tab-content.active {
       display: block;
     }
+
+    /* Add sidebar styles */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      transform: translateX(-250px);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar.expanded {
+      transform: translateX(0);
+    }
+
+    .sidebar-toggle {
+      position: fixed;
+      left: 10px;
+      top: 10px;
+      z-index: 1001;
+      background: #2c3e50;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      background-color: #34495e;
+      text-align: center;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar-menu li {
+      padding: 15px 20px;
+      border-bottom: 1px solid #34495e;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar-menu li:hover {
+      background-color: #34495e;
+    }
+
+    .sidebar-menu li.active {
+      background-color: #3498db;
+    }
+
+    /* Adjust main content */
+    .main-content {
+      margin-left: 0;
+      padding: 20px;
+      transition: margin-left 0.3s ease;
+    }
+
+    .main-content.sidebar-expanded {
+      margin-left: 250px;
+    }
+
+    /* Make container responsive */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .main-content.sidebar-expanded {
+        margin-left: 0;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>CareerFit</h1>
-    <p class="summary">Find your <strong>Candidate Market Fit</strong> from your resume in <strong>one click!</strong></p>
-    <p class="summary">What you <strong>love</strong> doing? What are the <strong>must haves</strong>? What are your career <strong>goals</strong>?</p>
-    <form id="uploadForm" enctype="multipart/form-data">
-      <div class="file-upload-container">
-        <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf" required>
-        <label for="fileInput" class="file-upload-label">
-          <div class="file-upload-icon">📄</div>
-          <div class="file-upload-text">Drag and drop your resume here or click to browse</div>
-          <div class="file-upload-text" style="font-size: 14px; margin-top: 5px;">(PDF files only)</div>
-          <div id="fileName" class="file-name"></div>
-        </label>
-        <button type="submit" class="upload-button">Upload and get your One-Pager</button>
-      </div>
-    </form>
-    <!-- Loading bar -->
-    <div class="loading-bar" id="loadingBar"></div>
-    <div id="output">
-      <div class="tabs">
-        <div class="tab-buttons">
-          <button class="tab-button active" data-tab="love-hate">Love & Hate</button>
-          <button class="tab-button" data-tab="must-haves">Must-Haves</button>
-          <button class="tab-button" data-tab="must-nots">Must-Nots</button>
-          <button class="tab-button" data-tab="strengths">Strengths & Weaknesses</button>
-          <button class="tab-button" data-tab="goals">Career Goals</button>
-          <button class="tab-button" data-tab="market-fit">Market Fit</button>
+  <button class="sidebar-toggle">☰</button>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>CareerFit</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="active" data-page="resume-analyzer">Resume Analyzer</li>
+      <li data-page="saved-profiles">Saved Profiles</li>
+      <li data-page="settings">Settings</li>
+      <li data-page="about">About</li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="container">
+      <h1>CareerFit</h1>
+      <p class="summary">Find your <strong>Candidate Market Fit</strong> from your resume in <strong>one click!</strong></p>
+      <p class="summary">What you <strong>love</strong> doing? What are the <strong>must haves</strong>? What are your career <strong>goals</strong>?</p>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="file-upload-container">
+          <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf" required>
+          <label for="fileInput" class="file-upload-label">
+            <div class="file-upload-icon">📄</div>
+            <div class="file-upload-text">Drag and drop your resume here or click to browse</div>
+            <div class="file-upload-text" style="font-size: 14px; margin-top: 5px;">(PDF files only)</div>
+            <div id="fileName" class="file-name"></div>
+          </label>
+          <button type="submit" class="upload-button">Upload and get your One-Pager</button>
         </div>
-        <div id="love-hate" class="tab-content active"></div>
-        <div id="must-haves" class="tab-content"></div>
-        <div id="must-nots" class="tab-content"></div>
-        <div id="strengths" class="tab-content"></div>
-        <div id="goals" class="tab-content"></div>
-        <div id="market-fit" class="tab-content"></div>
+      </form>
+      <!-- Loading bar -->
+      <div class="loading-bar" id="loadingBar"></div>
+      <div id="output">
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button class="tab-button active" data-tab="love-hate">Love & Hate</button>
+            <button class="tab-button" data-tab="must-haves">Must-Haves</button>
+            <button class="tab-button" data-tab="must-nots">Must-Nots</button>
+            <button class="tab-button" data-tab="strengths">Strengths & Weaknesses</button>
+            <button class="tab-button" data-tab="goals">Career Goals</button>
+            <button class="tab-button" data-tab="market-fit">Market Fit</button>
+          </div>
+          <div id="love-hate" class="tab-content active"></div>
+          <div id="must-haves" class="tab-content"></div>
+          <div id="must-nots" class="tab-content"></div>
+          <div id="strengths" class="tab-content"></div>
+          <div id="goals" class="tab-content"></div>
+          <div id="market-fit" class="tab-content"></div>
+        </div>
       </div>
     </div>
   </div>
+
+  <template id="saved-profiles-template">
+    <div class="container">
+      <h1>Saved Profiles</h1>
+      <div class="saved-profiles-list">
+        <p>No saved profiles yet.</p>
+      </div>
+    </div>
+  </template>
+
+  <template id="settings-template">
+    <div class="container">
+      <h1>Settings</h1>
+      <div class="settings-form">
+        <h2>Preferences</h2>
+        <!-- Add settings options here -->
+      </div>
+    </div>
+  </template>
+
+  <template id="about-template">
+    <div class="container">
+      <h1>About CareerFit</h1>
+      <p>CareerFit helps professionals understand their career preferences and market fit through AI-powered resume analysis.</p>
+    </div>
+  </template>
 
   <script>
     document.getElementById('uploadForm').addEventListener('submit', async (e) => {
@@ -372,6 +499,59 @@
         const fileNameDiv = document.getElementById('fileName');
         fileNameDiv.textContent = `Selected file: ${files[0].name}`;
         fileNameDiv.style.display = 'block';
+      }
+    });
+
+    // Add sidebar toggle functionality
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('expanded');
+      mainContent.classList.toggle('sidebar-expanded');
+    });
+
+    // Add page navigation
+    const menuItems = document.querySelectorAll('.sidebar-menu li');
+    const pageTemplates = {
+      'resume-analyzer': document.querySelector('.container'),
+      'saved-profiles': document.querySelector('#saved-profiles-template'),
+      'settings': document.querySelector('#settings-template'),
+      'about': document.querySelector('#about-template')
+    };
+
+    menuItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // Update active state
+        menuItems.forEach(mi => mi.classList.remove('active'));
+        item.classList.add('active');
+
+        // Show selected page
+        const pageName = item.dataset.page;
+        const pageContent = pageName === 'resume-analyzer' 
+          ? pageTemplates[pageName]
+          : pageTemplates[pageName].content.cloneNode(true);
+
+        mainContent.innerHTML = '';
+        mainContent.appendChild(pageContent);
+
+        // On mobile, close sidebar after selection
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('expanded');
+          mainContent.classList.remove('sidebar-expanded');
+        }
+      });
+    });
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(e.target) && 
+          !sidebarToggle.contains(e.target) && 
+          sidebar.classList.contains('expanded')) {
+        sidebar.classList.remove('expanded');
+        mainContent.classList.remove('sidebar-expanded');
       }
     });
   </script>
