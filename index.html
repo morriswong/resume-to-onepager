@@ -167,6 +167,45 @@
         transform: translateX(100%);
       }
     }
+    /* Add new styles for tabs */
+    .tabs {
+      display: none; /* Hidden initially */
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .tab-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .tab-button.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -189,15 +228,21 @@
     <!-- Loading bar -->
     <div class="loading-bar" id="loadingBar"></div>
     <div id="output">
-      <div class="email-container">
-        <h2>Email Preview</h2>
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" class="email-input" placeholder="Subject line will appear here" readonly>
-        <label for="emails">To:</label>
-        <input type="text" id="emails" class="email-input" placeholder="Extracted emails will appear here" readonly>
-        <label for="onepager">Content:</label>
-        <div id="onepager" class="email-container"></div>
-        <button id="sendButton" class="send-button">Send Email</button>
+      <div class="tabs">
+        <div class="tab-buttons">
+          <button class="tab-button active" data-tab="love-hate">Love & Hate</button>
+          <button class="tab-button" data-tab="must-haves">Must-Haves</button>
+          <button class="tab-button" data-tab="must-nots">Must-Nots</button>
+          <button class="tab-button" data-tab="strengths">Strengths & Weaknesses</button>
+          <button class="tab-button" data-tab="goals">Career Goals</button>
+          <button class="tab-button" data-tab="market-fit">Market Fit</button>
+        </div>
+        <div id="love-hate" class="tab-content active"></div>
+        <div id="must-haves" class="tab-content"></div>
+        <div id="must-nots" class="tab-content"></div>
+        <div id="strengths" class="tab-content"></div>
+        <div id="goals" class="tab-content"></div>
+        <div id="market-fit" class="tab-content"></div>
       </div>
     </div>
   </div>
@@ -227,21 +272,18 @@
 
           // Show the output section
           document.getElementById('output').style.display = 'block';
+          document.querySelector('.tabs').style.display = 'block';
 
-          // Display parsed emails in the input box
-          if (data.emails && data.emails.length > 0) {
-            document.getElementById('emails').value = data.emails.join(', ');
-          } else {
-            document.getElementById('emails').value = 'No email addresses found in the PDF.';
-          }
-
-          // Parse Markdown into HTML and display the one-pager
-          const onepagerHtml = marked.parse(data.onepager);
-          document.getElementById('onepager').innerHTML = onepagerHtml;
-
-          // Generate a subject line based on the one-pager
-          const subjectLine = `Your Professional One-Pager: ${data.onepager.split('\n')[0]}`;
-          document.getElementById('subject').value = subjectLine;
+          // Parse the markdown content
+          const sections = parseSections(data.onepager);
+          
+          // Populate each tab with its content
+          document.getElementById('love-hate').innerHTML = marked.parse(sections['What I Love and Hate Doing'] || '');
+          document.getElementById('must-haves').innerHTML = marked.parse(sections['Must-Haves'] || '');
+          document.getElementById('must-nots').innerHTML = marked.parse(sections['Must-Nots'] || '');
+          document.getElementById('strengths').innerHTML = marked.parse(sections['Strengths and Weaknesses'] || '');
+          document.getElementById('goals').innerHTML = marked.parse(sections['Career Goals'] || '');
+          document.getElementById('market-fit').innerHTML = marked.parse(sections['Candidate Market Fit'] || '');
         } else {
           alert(data.message || 'An error occurred.');
         }
@@ -254,37 +296,44 @@
       }
     });
 
-    // Handle "Send Email" button click
-    document.getElementById('sendButton').addEventListener('click', async () => {
-      const emails = document.getElementById('emails').value;
-      const subject = document.getElementById('subject').value;
-      const onepager = document.getElementById('onepager').innerText;
-
-      if (!emails || emails === 'No email addresses found in the PDF.') {
-        alert('No valid email addresses found.');
-        return;
-      }
-
-      try {
-        const response = await fetch('/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ emails, subject, onepager }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert('Email sent successfully!');
+    // Add function to parse markdown sections
+    function parseSections(markdown) {
+      const sections = {};
+      let currentSection = '';
+      let currentContent = [];
+      
+      const lines = markdown.split('\n');
+      
+      for (const line of lines) {
+        if (line.startsWith('# ')) {
+          if (currentSection) {
+            sections[currentSection] = currentContent.join('\n');
+          }
+          currentSection = line.substring(2);
+          currentContent = [];
         } else {
-          alert(data.message || 'An error occurred while sending the email.');
+          currentContent.push(line);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while sending the email.');
       }
+      
+      if (currentSection) {
+        sections[currentSection] = currentContent.join('\n');
+      }
+      
+      return sections;
+    }
+
+    // Add tab switching functionality
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons and contents
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        // Add active class to clicked button and corresponding content
+        button.classList.add('active');
+        document.getElementById(button.dataset.tab).classList.add('active');
+      });
     });
 
     document.getElementById('fileInput').addEventListener('change', function(e) {
