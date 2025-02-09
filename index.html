@@ -53,37 +53,71 @@
     .email-container li {
       margin-bottom: 0.5em;
     }
+    .file-input {
+      display: none; /* Hide the default file input */
+    }
+    
+    .file-upload-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .file-upload-label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      background-color: #ffffff;
+      border: 2px dashed #007bff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+    }
+    
+    .file-upload-label:hover {
+      background-color: #f8f9fa;
+      border-color: #0056b3;
+    }
+    
+    .file-upload-icon {
+      font-size: 40px;
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    
+    .file-upload-text {
+      color: #666;
+      font-size: 16px;
+    }
+    
+    .file-name {
+      margin-top: 10px;
+      color: #28a745;
+      display: none;
+    }
+
     .upload-button {
       background-color: #007bff;
       color: white;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 5px;
+      border-radius: 25px;
       cursor: pointer;
       font-size: 16px;
-      margin-top: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-top: 15px;
+      width: 100%;
+      max-width: 300px;
     }
+
     .upload-button:hover {
       background-color: #0056b3;
-    }
-    .file-input {
-      margin-top: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      background-color: #fff;
-      cursor: pointer;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .file-input:hover {
-      border-color: #007bff;
-    }
-    .summary {
-      font-size: 18px;
-      color: #555;
-      margin-top: 10px;
-      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transform: translateY(-1px);
     }
     .email-input {
       width: 100%;
@@ -141,8 +175,16 @@
     <p class="summary">Find your <strong>Candidate Market Fit</strong> from your resume in <strong>one click!</strong></p>
     <p class="summary">What you <strong>love</strong> doing? What are the <strong>must haves</strong>? What are your career <strong>goals</strong>?</p>
     <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf" required>
-      <button type="submit" class="upload-button">Upload and get your One-Pager</button>
+      <div class="file-upload-container">
+        <input type="file" name="file" id="fileInput" class="file-input" accept=".pdf" required>
+        <label for="fileInput" class="file-upload-label">
+          <div class="file-upload-icon">📄</div>
+          <div class="file-upload-text">Drag and drop your resume here or click to browse</div>
+          <div class="file-upload-text" style="font-size: 14px; margin-top: 5px;">(PDF files only)</div>
+          <div id="fileName" class="file-name"></div>
+        </label>
+        <button type="submit" class="upload-button">Upload and get your One-Pager</button>
+      </div>
     </form>
     <!-- Loading bar -->
     <div class="loading-bar" id="loadingBar"></div>
@@ -242,6 +284,45 @@
       } catch (error) {
         console.error('Error:', error);
         alert('An error occurred while sending the email.');
+      }
+    });
+
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const fileName = e.target.files[0]?.name;
+      const fileNameDiv = document.getElementById('fileName');
+      if (fileName) {
+        fileNameDiv.textContent = `Selected file: ${fileName}`;
+        fileNameDiv.style.display = 'block';
+      } else {
+        fileNameDiv.style.display = 'none';
+      }
+    });
+
+    const uploadLabel = document.querySelector('.file-upload-label');
+
+    uploadLabel.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadLabel.style.backgroundColor = '#f8f9fa';
+      uploadLabel.style.borderColor = '#0056b3';
+    });
+
+    uploadLabel.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      uploadLabel.style.backgroundColor = '#ffffff';
+      uploadLabel.style.borderColor = '#007bff';
+    });
+
+    uploadLabel.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadLabel.style.backgroundColor = '#ffffff';
+      uploadLabel.style.borderColor = '#007bff';
+      
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        document.getElementById('fileInput').files = files;
+        const fileNameDiv = document.getElementById('fileName');
+        fileNameDiv.textContent = `Selected file: ${files[0].name}`;
+        fileNameDiv.style.display = 'block';
       }
     });
   </script>
